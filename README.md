@@ -6,13 +6,13 @@ Features
 --------
 
 - Whenever it is possible, entries are put in their 'home' positions when they 
-are inserted into the table. Entries with the same home positions are chained
+are inserted into the table. Entries with same home positions are chained
 together.
-- Hash values of the keys are cached in the table. When equality test is needed,
-the hash values will be compared first before calling the equality test
-function. This makes tiny hash very retrieval friendly as keys' equality tests 
-are usually much more expensive than those of the hash values (compare the cost
-of `strcmp("http://example.com/node/1", "http://example.com/node/2")` and 
+- Hash values of the keys are cached in the table. When an equality test is 
+needed, the hash values will be compared first before calling a test function. 
+This makes tiny hash very retrieval friendly as keys' equality tests are usually
+much more expensive than those of the hash values (compare the costs of 
+`strcmp("http://example.com/node/1", "http://example.com/node/2")` and 
 `0x7f1b33fa == 0x62d9a0e3`).
 - Light weight (~300 lines of code) and well tested (see `test.c` for test 
 cases).
@@ -25,7 +25,7 @@ Usage
     /* Create a simple string hash table */
     TinyHash *tiny = tiny_hash_create_simple(0);
 
-    /* Put a key/value pairs into the table */
+    /* Put a key/value pair into the table */
     tiny_hash_put(tiny, "Hello", "World!");
 
     /* Test if a key exists */
@@ -52,11 +52,10 @@ Todo
 bytes. This can be reduced to 24 by changing the `next` pointer to a uint32 
 offset and using a special, invalid key pointer (e.g. `NULL` or `(void *)-1`) to 
 indicate if a node is taken.
-- Further performance improvements can be made by 1) Using a 'prev' offset in 
+- Further performance improvements can be made by 1) using a `prev` field in 
 the `Slot` so that removing an element does need to start from the head of a
-chain, and 2) Inserting an entry can be made quicker by keeping track of the 
-last element of the chain that the entry should be (obtainable from 
-`tiny_hash_locate()`).
+chain, and 2) returning the last element found in a chain, if there is one, from 
+`tiny_hash_locate()` so that `tiny_hash_put()` element can be made quicker.
 
 Others
 ------
