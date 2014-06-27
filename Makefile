@@ -6,15 +6,15 @@ SYSCFLAGS=
 SYSLDFLAGS=
 SYSLIBS=
 
-ALL_O= hash.o test.o
+OBJS= tinyhash.o test.o
 
 all: test
 
-test: $(ALL_O)
-	$(CC) -o $@ $(LDFLAGS) $(ALL_O) $(LIBS)
+test: $(OBJS)
+	$(CC) -o $@ $(LDFLAGS) $^ $(LIBS)
 
-hash.o: hash.c
-test.o: test.c hash.h
+tinyhash.o: tinyhash.c tinyhash.h
+test.o: test.c tinyhash.h
 
 clean:
-	rm -f $(ALL_O) test
+	rm -f $(OBJS) test

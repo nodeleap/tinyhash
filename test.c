@@ -2,7 +2,7 @@
  * Copyright (c) 2014 Weidong Fang
  */
 
-#include "hash.h"
+#include "tinyhash.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -247,6 +247,47 @@ static void test__resize(TinyHash *tiny, uint32_t size,
     printf("PASSED: %s (%s)\n", __func__, label);
 }
 
+static void print_entries(TinyHash *tiny) {
+    const TinyHashIterator *it = tiny_hash_first(tiny);
+    printf("\nNumber of entries: %d\n", tiny_hash_count(tiny));
+    printf("----------------\n");
+    while (it) {
+        printf("%s %s\n", (const char *) it->key, (const char *) it->value);
+        it = tiny_hash_next(tiny, it);
+    }
+    printf("----------------\n");
+}
+
+static void test__iterate() {
+    TinyHash *tiny = tiny_hash_create(4, test_hasher, NULL, 0);
+
+    tiny_hash_put(tiny, (const void *) "k-1", "v-1");
+    tiny_hash_put(tiny, (const void *) "k-2", "v-2");
+    tiny_hash_put(tiny, (const void *) "k-3", "v-3");
+    tiny_hash_put(tiny, (const void *) "k-4", "v-4");
+
+    print_entries(tiny);
+
+    tiny_hash_clear(tiny);
+
+    tiny_hash_put(tiny, (const void *) "k-1", "v-1");
+    tiny_hash_put(tiny, (const void *) "k-2", "v-2");
+    print_entries(tiny);
+
+    tiny_hash_clear(tiny);
+
+    tiny_hash_put(tiny, (const void *) "k-3", "v-3");
+    tiny_hash_put(tiny, (const void *) "k-4", "v-4");
+    tiny_hash_put(tiny, (const void *) "k-5", "v-5");
+    tiny_hash_put(tiny, (const void *) "k-6", "v-6");
+    tiny_hash_put(tiny, (const void *) "k-7", "v-7");
+    tiny_hash_put(tiny, (const void *) "K-7", "value-7");
+    tiny_hash_put(tiny, (const void *) "X-7", "value-7");
+    tiny_hash_put(tiny, (const void *) "k-8", "v-8");
+    print_entries(tiny);
+
+}
+
 int main(int argc, char **argv) {
     TinyHash *tiny = tiny_hash_create(4, test_hasher, NULL, 0);
     test__insert(tiny, test_cases_1, "test_cases_1");
@@ -268,6 +309,8 @@ int main(int argc, char **argv) {
     assert(tiny_hash_remove(tiny, "K-21") == 0);
     assert(tiny_hash_count(tiny) == 3);
     tiny_hash_destroy(tiny);
+
+    test__iterate();
 
     printf("All tests passed\n");
 

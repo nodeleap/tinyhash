@@ -2,6 +2,8 @@
  * Copyright (c) 2014 Weidong Fang
  */
 
+#include "tinyhash.h"
+
 #include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -96,6 +98,16 @@ tiny_hash_destroy(TinyHash *t)
 {
     xfree(t->slot);
     xfree(t);
+}
+
+void
+tiny_hash_clear(TinyHash *t)
+{
+    if (t->count > 0) {
+        memset(t->slot, 0, t->size * sizeof(Slot));
+        t->free_slot = t->slot + t->size;
+        t->count = 0;
+    }
 }
 
 int
@@ -320,10 +332,37 @@ static HASH tiny_hash_string_hasher(const void *key) {
     return h;
 }
 
+const TinyHashIterator *tiny_hash_first(TinyHash *t) {
+    Slot *slot = t->slot;
+    while (slot < t->slot + t->size && !slot->taken) {
+        slot++;
+    }
+    if (slot < t->slot + t->size && slot->taken) {
+        return (const TinyHashIterator *) slot;
+    }
+    return NULL;
+}
+
+const TinyHashIterator *tiny_hash_next(TinyHash *t, const TinyHashIterator *p) {
+    Slot *slot = (Slot *) p;
+
+    ++slot;
+
+    while (slot < t->slot + t->size && !slot->taken) {
+        slot++;
+    }
+
+    if (slot < t->slot + t->size && slot->taken) {
+        return (const TinyHashIterator *) slot;
+    }
+
+    return NULL;
+}
+
 #ifdef TEST
 #include <stdio.h>
 void tiny_hash_dump(TinyHash *t, char *buf, int length) {
-    int i, so;
+    uint32_t i, so;
     *buf = '\0';
     for (i = 0, so = 0; i < t->size; i++) {
         Slot *slot = &t->slot[i];
