@@ -23,7 +23,7 @@ typedef struct Slot {
 typedef HASH    (*Hasher) (const void *);
 typedef int     (*Tester) (const void *, const void *);
 
-typedef struct TinyHash {
+struct TinyHash {
     Slot *slot;
     Slot *free_slot;
 
@@ -35,7 +35,7 @@ typedef struct TinyHash {
 
     Hasher hasher;
     Tester tester;
-} TinyHash;
+};
 
 #define TINY_OK         0
 #define TINY_ERROR     -1
