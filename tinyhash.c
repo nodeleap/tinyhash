@@ -5,6 +5,7 @@
 #include "tinyhash.h"
 
 #include <assert.h>
+#include <ctype.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -53,6 +54,9 @@ static int tiny_hash_test(TinyHash *, Slot *, HASH, const void *);
 static HASH tiny_hash_string_hasher(const void *key);
 static int  tiny_hash_string_tester(const void *s1, const void *s2);
 
+static HASH tiny_hash_string_hasher_caseless(const void *key);
+static int  tiny_hash_string_tester_caseless(const void *s1, const void *s2);
+
 uint32_t
 tiny_hash_count(TinyHash *t)
 {
@@ -87,10 +91,16 @@ tiny_hash_create(uint32_t size, Hasher hasher, Tester tester, float max_full)
 }
 
 TinyHash *
-tiny_hash_create_simple(uint32_t size)
+tiny_hash_create_simple(uint32_t size, int caseless)
 {
-    return tiny_hash_create(size, tiny_hash_string_hasher,
-            tiny_hash_string_tester, 0.75);
+    if (caseless) {
+        return tiny_hash_create(size, tiny_hash_string_hasher_caseless,
+                tiny_hash_string_tester_caseless, 0.75);
+    }
+    else {
+        return tiny_hash_create(size, tiny_hash_string_hasher,
+                tiny_hash_string_tester, 0.75);
+    }
 }
 
 void
@@ -319,6 +329,10 @@ static int tiny_hash_string_tester(const void *s1, const void *s2) {
     return !strcmp((const char *) s1, (const char *) s2);
 }
 
+static int tiny_hash_string_tester_caseless(const void *s1, const void *s2) {
+    return !strcasecmp((const char *) s1, (const char *) s2);
+}
+
 /**
  * 32-bit FNV1-1a algorithm
  */
@@ -327,6 +341,21 @@ static HASH tiny_hash_string_hasher(const void *key) {
     HASH h = 2166136261;
     while (*s) {
         h ^= (u_int32_t) *s++;
+        h *= (HASH) 0x01000193;
+    }
+    return h;
+}
+
+/**
+ * 32-bit FNV1-1a algorithm (caseless)
+ */
+static HASH tiny_hash_string_hasher_caseless(const void *key) {
+    unsigned char *s = (unsigned char *) key;
+    HASH h = 2166136261;
+    while (*s) {
+        char c;
+        c = tolower(*s++);
+        h ^= (u_int32_t) c;
         h *= (HASH) 0x01000193;
     }
     return h;

@@ -5,11 +5,15 @@
 #ifndef __TINY_HASH_H__
 #define __TINY_HASH_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 
 typedef struct TinyHash TinyHash;
 
-TinyHash *tiny_hash_create_simple(uint32_t size);
+TinyHash *tiny_hash_create_simple(uint32_t size, int caseless);
 TinyHash *tiny_hash_create(uint32_t size, uint32_t (*hasher) (const void *),
         int (*tester) (const void *, const void *), float max_full);
 void tiny_hash_clear(TinyHash *);
@@ -29,5 +33,9 @@ typedef struct {
 
 const TinyHashIterator *tiny_hash_first(TinyHash*);
 const TinyHashIterator *tiny_hash_next(TinyHash*, const TinyHashIterator*);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __TINY_HASH_H__
